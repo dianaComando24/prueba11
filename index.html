@@ -1,90 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Página de Inicio - Campeche</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f8f8f8;
-      margin: 0;
-      text-align: center;
-    }
-
-    header {
-      background-color: #8B0000;
-      color: white;
-      padding: 20px;
-    }
-
-    .logo {
-      height: 100px;
-      max-width: 100%;
-      width: auto;
-      transition: all 0.3s ease;
-    }
-
-    #main-content {
-      margin-top: 40px;
-      padding: 20px;
-    }
-
-    #main-content img {
-      max-width: 80%;
-      height: auto;
-      border-radius: 15px;
-      margin-bottom: 20px;
-    }
-
-    #main-content h2 {
-      font-size: 2em;
-      color: #333;
-    }
-
-    .btn-go-to-index {
-      background-color: #8B0000;
-      color: #380404;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1.2em;
-      transition: background-color 0.3s ease;
-      margin-top: 20px; /* Aseguramos que haya suficiente espacio para el botón */
-      display: inline-block;
-    }
-
-    .btn-go-to-index:hover {
-      background-color: #a30000;
-    }
-
-    footer {
-        margin-top: 400px;
-      background-color: #8B0000;
-      color: white;
-      padding: 10px;
-      position: fixed;
-      width: 100%;
-      bottom: 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recorrido en auto - OSRM</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #map { height: 500px; width: 100%; }
+    </style>
 </head>
-<body>
-  <header>
-    <img src="img/logo.jpg" alt="Logo" class="logo">
-    <h1>Bienvenido a Campeche</h1>
-  </header>
+<body class="p-6">
 
-  <div id="main-content">
-    <img src="img/fondo.jpeg" alt="Imagen de Campeche">
-    <h2>Explora los lugares más emblemáticos de Campeche</h2>
-    <p>Sumérgete en la historia y belleza de esta maravillosa ciudad, conocida por su arquitectura colonial y hermosos paisajes.</p>
-    
- <a href="index3.html">
-      <button class="btn-go-to-index">Ir al Recorrido</button>
-    </a>
-  </div>
+    <h1 class="text-2xl font-bold mb-4">Ruta en auto siguiendo carreteras</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([19.845, -90.523], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Lugares del recorrido
+        const sites = [
+            { lat: 19.8341388, lng: -90.5564829, name: 'Vapor Lolá' },
+            { lat: 19.825526, lng: -90.57013, name: 'Batería de San Luis' },
+            { lat: 19.824654, lng: -90.56867, name: 'Fuerte de San Miguel' },
+            { lat: 19.805915, lng: -90.600995, name: 'Parque de Lerma' },
+            { lat: 19.7932242, lng: -90.6240417, name: 'Playa Bonita' }
+        ];
+
+        // Agregar marcadores al mapa
+        sites.forEach(site => {
+            L.marker([site.lat, site.lng]).addTo(map).bindPopup(site.name);
+        });
+
+        // Obtener la ruta OSRM
+        function getOSRMRoute(sites) {
+            const coordinates = sites.map(site => `${site.lng},${site.lat}`).join(';');
+            const osrmRouteUrl = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+
+            fetch(osrmRouteUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const routeCoordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    L.polyline(routeCoordinates, { color: 'blue', weight: 4 }).addTo(map);
+                })
+                .catch(error => console.error('Error obteniendo la ruta:', error));
+        }
+
+        getOSRMRoute(sites);
+    </script>
 
 </body>
 </html>

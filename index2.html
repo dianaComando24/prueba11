@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recorrido en auto del Patrimonio Cultural Subacuático</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        .distance {
+            color: #8B0000; /* Rojo vino */
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        body {
+            background-color: white;
+            color: black;
+        }
+
+        h1, p {
+            color: black;
+        }
+
+        .bg-red-vino {
+            background-color: #8B0000; /* Rojo vino */
+        }
+
+        .bg-red-vino-dark {
+            background-color: #650000; /* Rojo vino más oscuro */
+        }
+
+        .text-red-vino {
+            color: #8B0000; /* Rojo vino */
+        }
+
+        .btn-red-vino {
+            background-color: #8B0000;
+            color: white;
+        }
+
+        .btn-red-vino:hover {
+            background-color: #650000;
+        }
+
+        .bg-opacity-50 {
+            background-color: rgba(139, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="font-sans relative">
+
+<!-- Logo en la esquina -->
+<div class="absolute top-4 left-4">
+    <img src="img/logo.jpg" alt="Logo" class="w-20 h-20 object-contain rounded-full shadow-lg">
+</div>
+
+
+    <div class="max-w-4xl mx-auto p-6 space-y-6">
+ 
+        <!-- Título con fondo -->
+        <div class="bg-cover bg-center p-6 rounded-lg shadow-md" style="background-image: url('https://img.freepik.com/vector-gratis/ruinas-antiguos-templos-hundidos-peces_107791-31885.jpg');">
+            <h1 class="text-center text-2xl font-bold text-white mb-4 bg-black bg-opacity-50 p-2 rounded-lg">
+                Recorrido en auto del Patrimonio Cultural Subacuático
+            </h1>
+        </div>
+
+        <!-- Distancia al destino -->
+        <div class="distance text-center">
+            <span id="distance">Distancia al destino: 0 km</span>
+        </div>
+
+        <!-- Botón para seguir ubicación -->
+        <div class="flex justify-center">
+            <button id="followBtn" class="btn-red-vino px-6 py-3 rounded-lg shadow-md hover:bg-red-vino-dark">
+                Seguir mi ubicación
+            </button>
+        </div>
+
+      <!-- Botones para cambiar idioma -->
+<div class="flex justify-center space-x-4">
+    <button id="spanishBtn" class="btn-red-vino px-6 py-3 rounded-lg shadow-md hover:bg-red-vino-dark flex items-center justify-center">
+        <img src="img/español.png" alt="España" class="w-12 h-12 rounded-full transition-transform transform hover:scale-110">
+    </button>
+    <button id="englishBtn" class="btn-red-vino px-6 py-3 rounded-lg shadow-md hover:bg-red-vino-dark flex items-center justify-center">
+        <img src="img/ingles.png" alt="UK" class="w-12 h-12 rounded-full transition-transform transform hover:scale-110">
+    </button>
+</div>
+
+
+        <!-- Mapa -->
+        <div class="bg-white p-2 rounded-lg shadow-md">
+            <div id="map" class="rounded-lg"></div>
+        </div>
+
+        <!-- Información sobre la página -->
+        <div class="bg-red-vino bg-opacity-50 p-4 rounded-lg shadow-md text-center text-white">
+            <p id="infoText">
+                Esta página muestra un recorrido en auto para explorar el Patrimonio Cultural Subacuático en Campeche, destacando sitios históricos y naturales importantes.
+            </p>
+            <p class="mt-2 text-sm" id="footerText">© 2025 Recorridos Campeche. Todos los derechos reservados.</p>
+        </div>
+
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Script principal -->
+    <script>
+        // Inicializar el mapa
+        const map = L.map('map').setView([19.845, -90.523], 14);
+
+        // Cargar tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Sitios con información e imagen
+        const sites = [
+            { 
+                lat: 19.8341388, 
+                lng: -90.5564829, 
+                title: {
+                    es: 'Vapor Lolá',
+                    en: 'Vapor Lolá'
+                }, 
+                description: {
+                    es: 'Es un ejemplo de la transformación de los buques en el proceso de la Revolución Industrial (siglo XIX). Este navío de la marina mercante francesa quedó varado en la playa hacia 1864.',
+                    en: 'It is an example of the transformation of ships during the Industrial Revolution (19th century). This French merchant navy ship was stranded on the beach around 1864.'
+                },
+                imageUrl: 'img/VaporLola.jpg' 
+            },
+            { 
+                lat: 19.825526, 
+                lng: -90.57013, 
+                title: {
+                    es: 'Batería de San Luis',
+                    en: 'San Luis Battery'
+                },
+                description: {
+                    es: 'Antiguo fuerte utilizado en la defensa de la ciudad.',
+                    en: 'An old fort used in the defense of the city.'
+                },
+                imageUrl: 'img/bateria-de-san-luis.webp' 
+            },
+            { 
+                lat: 19.824654, 
+                lng: -90.56867, 
+                title: {
+                    es: 'Fuerte de San Miguel',
+                    en: 'San Miguel Fort'
+                },
+                description: {
+                    es: 'Fuerte histórico que protegía la bahía de Campeche.',
+                    en: 'Historical fort that protected the Campeche bay.'
+                },
+                imageUrl: 'img/fuerteSanMiguel.jpg' 
+            },
+            { 
+                lat: 19.805915, 
+                lng: -90.600995, 
+                title: {
+                    es: 'Parque de Lerma',
+                    en: 'Lerma Park'
+                },
+                description: {
+                    es: 'Un parque natural con vistas panorámicas de la ciudad.',
+                    en: 'A natural park with panoramic views of the city.'
+                },
+                imageUrl: 'img/parqueLerma.jpg' 
+            },
+            { 
+                lat: 19.7932242, 
+                lng: -90.6240417, 
+                title: {
+                    es: 'Playa Bonita',
+                    en: 'Playa Bonita'
+                },
+                description: {
+                    es: 'Playa tranquila ideal para el descanso y la reflexión.',
+                    en: 'A quiet beach ideal for rest and reflection.'
+                },
+                imageUrl: 'img/playaBonita.jpg' 
+            }
+        ];
+
+        // Marcadores con imagen y descripción
+        sites.forEach((site) => {
+            L.marker([site.lat, site.lng]).addTo(map)
+                .bindPopup(`
+                    <h3 class="text-black font-bold">${site.title.es}</h3>
+                    <img src="${site.imageUrl}" alt="${site.title.es}" class="w-32 h-32 object-cover rounded-lg mt-2 mb-2">
+                    <p class="text-black">${site.description.es}</p>
+                `);
+        });
+
+        // Polilínea
+        const routeCoordinates = sites.map(site => [site.lat, site.lng]);
+        L.polyline(routeCoordinates, { color: '#8B0000', weight: 4 }).addTo(map); // Rojo vino
+
+        // Variables
+        let userMarker;
+        const destination = sites[0];
+        let followUser = true;
+
+        // Actualizar distancia
+        function updateDistance(userPosition) {
+            const userLatLng = L.latLng(userPosition);
+            const destinationLatLng = L.latLng(destination.lat, destination.lng);
+
+            const distanceInMeters = userLatLng.distanceTo(destinationLatLng);
+            const distanceInKm = (distanceInMeters / 1000).toFixed(2);
+
+            document.getElementById('distance').textContent = `Distancia al destino: ${distanceInKm} km`;
+        }
+
+        // Geolocalización
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    const pos = [position.coords.latitude, position.coords.longitude];
+
+                    if (userMarker) {
+                        userMarker.setLatLng(pos);
+                    } else {
+                        userMarker = L.marker(pos).addTo(map)
+                            .bindPopup('Ubicación actual')
+                            .openPopup();
+                    }
+
+                    if (followUser) {
+                        map.setView(pos, 14);
+                    }
+
+                    updateDistance(pos);
+                },
+
+                () => {
+                    alert('Error: El servicio de geolocalización ha fallado.');
+                },
+
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 5000 }
+            );
+        } else {
+            alert('Error: Tu navegador no soporta geolocalización.');
+        }
+
+        // Botón para activar/desactivar seguimiento
+        const followBtn = document.getElementById('followBtn');
+
+        followBtn.addEventListener('click', () => {
+            followUser = !followUser;
+
+            if (followUser) {
+                followBtn.textContent = 'Seguir mi ubicación';
+                followBtn.classList.remove('bg-green-500');
+                followBtn.classList.add('bg-blue-500');
+            } else {
+                followBtn.textContent = 'No seguir ubicación';
+                followBtn.classList.remove('bg-blue-500');
+                followBtn.classList.add('bg-green-500');
+            }
+        });
+
+        // Función para cambiar idioma
+        function changeLanguage(language) {
+            sites.forEach((site) => {
+                const marker = L.marker([site.lat, site.lng]);
+                marker.addTo(map).bindPopup(`
+                    <h3 class="text-black font-bold">${site.title[language]}</h3>
+                    <img src="${site.imageUrl}" alt="${site.title[language]}" class="w-32 h-32 object-cover rounded-lg mt-2 mb-2">
+                    <p class="text-black">${site.description[language]}</p>
+                `);
+            });
+
+            document.getElementById('infoText').textContent = (language === 'es') 
+                ? 'Esta página muestra un recorrido en auto para explorar el Patrimonio Cultural Subacuático en Campeche, destacando sitios históricos y naturales importantes.'
+                : 'This page shows a car tour to explore the Underwater Cultural Heritage in Campeche, highlighting important historical and natural sites.';
+
+            document.getElementById('footerText').textContent = (language === 'es') 
+                ? '© 2025 Recorridos Campeche. Todos los derechos reservados.' 
+                : '© 2025 Campeche Tours. All rights reserved.';
+        }
+
+        // Botones de idioma
+        document.getElementById('spanishBtn').addEventListener('click', () => {
+            changeLanguage('es');
+        });
+
+        document.getElementById('englishBtn').addEventListener('click', () => {
+            changeLanguage('en');
+        });
+    </script>
+
+</body>
+
+</html>
